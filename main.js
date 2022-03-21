@@ -30,8 +30,8 @@ canvas.addEventListener('touchmove', (e)=>
 {
   let scale = canvas.offsetWidth/canvas.width;
   let pointer = e.touches?e.touches[0]:e;
-  pointerX =pointer.clientX/scale;
-  pointerY = pointer.clientY/scale;
+  pointerX =pointer.pageX/scale;
+  pointerY = pointer.pageY/scale;
 });
 let player = new Player(canvas.width/2-8, canvas.height/2-8, 16, 16);
 let obsts = [];

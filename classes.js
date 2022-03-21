@@ -2,14 +2,14 @@ class Player{
     xSpeed = 4;
     ySpeed = 4;
     lamp = [];
-    lightPower = 20;
+    lightPower = 25;
     constructor(x, y, width, height)
     {
       this.x = x;
       this.y = y;
       this.height = height;
       this.width = width;
-      for(let i = 0;i<45;i+=0.5)
+      for(let i = 0;i<70;i+=0.5)
       {
         this.lamp.push(new Ray(this.x+this.width/2, this.y+this.height/2, i/180*Math.PI*2))
       }
