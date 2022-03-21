@@ -2,13 +2,13 @@ let canvas = document.getElementsByTagName('canvas')[0];
 canvas.width = 640;
 canvas.height = 336;
 let ctx = canvas.getContext('2d');
-let mouseX, mouseY;
+let pointerX, pointerY;
 let click;
 canvas.addEventListener('mousemove', (e)=>
 {
   let scale = canvas.offsetWidth/canvas.width;
-  mouseX = e.offsetX/scale;
-  mouseY = e.offsetY/scale;
+  pointerX = e.offsetX/scale;
+  pointerY = e.offsetY/scale;
 });
 canvas.addEventListener('mousedown', ()=>
 {
@@ -22,15 +22,16 @@ canvas.addEventListener('touchstart', ()=>
 {
   click = true;
 });
-canvas.addEventListener('touchcancel', ()=>
+canvas.addEventListener('touchend', ()=>
 {
   click = false;
 });
 canvas.addEventListener('touchmove', (e)=>
 {
   let scale = canvas.offsetWidth/canvas.width;
-  mouseX = e.offsetX/scale;
-  mouseY = e.offsetY/scale;
+  let pointer = e.touches?e.touches[0]:e;
+  pointerX =pointer.clientX/scale;
+  pointerY = pointer.clientY/scale;
 });
 let player = new Player(canvas.width/2-8, canvas.height/2-8, 16, 16);
 let obsts = [];

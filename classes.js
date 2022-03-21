@@ -23,7 +23,7 @@ class Player{
       {
         this.lamp[i].x = this.x+this.width/2;
         this.lamp[i].y = this.y+this.height/2;
-        this.lamp[i].lookAt(Math.atan2(mouseY-this.y, mouseX-this.x)+i/2/180*Math.PI-this.lamp.length/4/180*Math.PI);
+        this.lamp[i].lookAt(Math.atan2(pointerY-this.y, pointerX-this.x)+i/2/180*Math.PI-this.lamp.length/4/180*Math.PI);
       }
       for(let ot of obsts)
       {
