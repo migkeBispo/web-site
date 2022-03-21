@@ -1,0 +1,12 @@
+body {
+    margin: 0px;
+    margin-top: 16px;
+    background-color: #000000;
+}
+canvas#main{
+  width: 64%;
+  display: block;
+  margin: auto;
+  image-rendering: optimizeSpeed;
+  /*border: 1px solid dimgray;*/
+}
