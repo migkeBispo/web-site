@@ -1,34 +1,24 @@
 class Player{
     xSpeed = 4;
     ySpeed = 4;
-    lamp = [];
     lightPower = 25;
+    maxAngle = 70;
+    ray;
     constructor(x, y, width, height)
     {
       this.x = x;
       this.y = y;
       this.height = height;
       this.width = width;
-      for(let i = 0;i<70;i+=0.5)
-      {
-        this.lamp.push(new Ray(this.x+this.width/2, this.y+this.height/2, i/180*Math.PI*2))
-      }
+      this.ray = new Ray(this.x+width/2, this.y+height/2, 0);
     }
     update()
     {
       this.x+=this.xSpeed;
       this.y+=this.ySpeed;
       this.bounceInWalls();
-      for(let i = 0;i<this.lamp.length;i++)
-      {
-        this.lamp[i].x = this.x+this.width/2;
-        this.lamp[i].y = this.y+this.height/2;
-        this.lamp[i].lookAt(Math.atan2(pointerY-this.y, pointerX-this.x)+i/2/180*Math.PI-this.lamp.length/4/180*Math.PI);
-      }
-      for(let ot of obsts)
-      {
-        this.bounceInObstacles(ot);
-      }
+      this.ray.x = this.x+this.width/2;
+      this.ray.y = this.y+this.height/2;
     }
     render(ctx)
     {
@@ -53,27 +43,6 @@ class Player{
       {
         this.xSpeed*=-1;
       }
-    }
-    bounceInObstacles(obst)
-    {
-      if(this.y+this.height>=obst.y&&
-        this.y<=obst.y+obst.h)
-        {
-          if((this.x+this.xSpeed<=obst.x+obst.w&&this.x+this.xSpeed>obst.x)||
-            (this.x+this.width+this.xSpeed>=obst.x&&this.x+this.xSpeed<obst.x))
-          {
-            player.xSpeed*=-1;
-          }
-        }
-        else if(this.x+this.width>=obst.x&&
-          this.x<=obst.x+obst.w)
-          {
-            if(this.y+this.ySpeed <=obst.y+obst.h&&this.y+this.ySpeed>obst.y||
-              (this.y+this.height+this.ySpeed>=obst.y&&this.y+this.ySpeed<obst.y))
-            {
-              this.ySpeed*=-1;
-            }
-        }
     }
     bounceInLine(line)
     {
@@ -133,31 +102,6 @@ class Player{
       ctx.stroke();
     }
   }
-  class Obstacle{
-
-    lines = [];
-    constructor(x, y, w, h)
-    {
-      this.x = x;
-      this.y = y;
-      this.w = w;
-      this.h = h;
-      this.lines.splice(0, 0, new Line(x+w, y, x+w, y+h));
-      this.lines.splice(1, 0, new Line(x, y, x+w, y));
-      this.lines.splice(2, 0, new Line(x, y, x, y+h));
-      this.lines.splice(3, 0, new Line(x, y+h, x+w, y+h));
-    }
-    update()
-    {
-      
-    }
-    render(ctx)
-    {
-      ctx.beginPath();
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.strokeRect(this.x, this.y, this.w, this.h);
-    }
-  }
   class Line{
 
     a = {
@@ -179,16 +123,17 @@ class Player{
     {
       let freeLight = [];
       let freeLightB = [];
-      for(let i = 0;i<player.lamp.length;i++)
+      for(let i = 0;i<player.maxAngle;i++)
       {
+        player.ray.lookAt(Math.atan2(pointerY-player.y, pointerX-player.x)+(i-player.maxAngle/2)/180*Math.PI);
         let record = Infinity;
         let closest = null;
         for(let line of lines)
         {
-          const pt = player.lamp[i].cast(line);
+          const pt = player.ray.cast(line);
           if(pt)
           {
-            const d = Math.hypot(pt.x-player.lamp[i].x, pt.y-player.lamp[i].y);
+            const d = Math.hypot(pt.x-player.ray.x, pt.y-player.ray.y);
             if(d<record)
             {
               record = d;
@@ -198,14 +143,14 @@ class Player{
         }
         for(let line of lines)
         {
-          if(line!=this&&player.lamp[i].cast(line)&&closest.x == player.lamp[i].cast(line).x&&closest.y == player.lamp[i].cast(line).y&&freeLightB.length>0)
+          if(line!=this&&player.ray.cast(line)&&closest.x == player.ray.cast(line).x&&closest.y == player.ray.cast(line).y&&freeLightB.length>0)
           {
             freeLight.push(freeLightB.splice(0, freeLightB.length));
             break;
           }
-          else if(player.lamp[i].cast(this)&&closest.x == player.lamp[i].cast(this).x&&closest.y == player.lamp[i].cast(this).y)
+          else if(player.ray.cast(this)&&closest.x == player.ray.cast(this).x&&closest.y == player.ray.cast(this).y)
           {
-            freeLightB.push(player.lamp[i]);
+            freeLightB.push(player.ray.cast(this));
             break;
           }
         }
@@ -218,25 +163,25 @@ class Player{
       {
         if(freeLight[j][0]&&freeLight[j][freeLight[j].length-1])
         {
-          let distance = Math.hypot((freeLight[j][0].cast(this).x+freeLight[j][freeLight[j].length-1].cast(this).x)/2-player.lamp[0].x, (freeLight[j][0].cast(this).y+freeLight[j][freeLight[j].length-1].cast(this).y)/2-player.lamp[0].y);
+          let distance = Math.hypot((freeLight[j][0].x+freeLight[j][freeLight[j].length-1].x)/2-player.ray.x, (freeLight[j][0].y+freeLight[j][freeLight[j].length-1].y)/2-player.ray.y);
           let power = Math.min(Number.parseInt(player.lightPower*10/2/distance*255), 255);
           if(power>=30)
           ctx.strokeStyle = '#FFFFFF'+power.toString(16).substring(0, 2);
           else
           ctx.strokeStyle = '#000'
-          this.drawLine(ctx, freeLight[j][0].cast(this).x, freeLight[j][0].cast(this).y, freeLight[j][freeLight[j].length-1].cast(this).x, freeLight[j][freeLight[j].length-1].cast(this).y);
+          this.drawLine(ctx, freeLight[j][0].x, freeLight[j][0].y, freeLight[j][freeLight[j].length-1].x, freeLight[j][freeLight[j].length-1].y);
         }
       }
       if(freeLight.length==1&&freeLight[0][0]&&freeLight[0][freeLight[0].length-1])
       {
-        let distance = Math.hypot((freeLight[0][0].cast(this).x+freeLight[0][freeLight[0].length-1].cast(this).x)/2-player.lamp[0].x, (freeLight[0][0].cast(this).y+freeLight[0][freeLight[0].length-1].cast(this).y)/2-player.lamp[0].y);
+        let distance = Math.hypot((freeLight[0][0].x+freeLight[0][freeLight[0].length-1].x)/2-player.ray.x, (freeLight[0][0].y+freeLight[0][freeLight[0].length-1].y)/2-player.ray.y);
         let power = Math.min(Number.parseInt(player.lightPower*10/2/distance*255), 255);
         ctx.strokeStyle = '#FFFFFF'+power.toString(16).substring(0, 2);
         if(power>=30)
         ctx.strokeStyle = '#FFFFFF'+power.toString(16).substring(0, 2);
         else
         ctx.strokeStyle = '#000'
-        this.drawLine(ctx, freeLight[0][0].cast(this).x, freeLight[0][0].cast(this).y, freeLight[0][freeLight[0].length-1].cast(this).x, freeLight[0][freeLight[0].length-1].cast(this).y);
+        this.drawLine(ctx, freeLight[0][0].x, freeLight[0][0].y, freeLight[0][freeLight[0].length-1].x, freeLight[0][freeLight[0].length-1].y);
       }
     }
     drawLine(ctx, x1, y1, x2, y2)
